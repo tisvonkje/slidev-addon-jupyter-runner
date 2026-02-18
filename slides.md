@@ -50,13 +50,13 @@ cpp:
   alwaysShowCompilerOutput: false
 ---
 
-# Jupyter runner forq [Slidev]
+# Jupyter runner for [Slidev]
 
 ::left::
 
 # C
 
-```python {monaco-run}
+```python {monaco-run}{autorun:false}
 a=42
 ```
 
@@ -64,7 +64,7 @@ a=42
 
 # C++
 
-```python {monaco-run}
+```python {monaco-run}{autorun:false}
 print(a)
 ```
 
