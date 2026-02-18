@@ -50,52 +50,22 @@ cpp:
   alwaysShowCompilerOutput: false
 ---
 
-# C + C++ Runner for [Slidev]
-
-Powered by [Coliru]
+# Jupyter runner forq [Slidev]
 
 ::left::
 
 # C
 
 ```python {monaco-run}
-#include <stdio.h>
-
-int main( void )
-{
-  const char *vec[] = { "GCC", __VERSION__ };
-  int n = sizeof ( vec ) / sizeof ( vec[0] );
-
-  for ( int i = 0; i < n; ++i ) {
-    printf( "%s ", vec[i] );
-  }
-
-  printf ( "\n" );
-  return 0;
-}
-
+a=42
 ```
 
 ::right::
 
 # C++
 
-```cpp {monaco-run}
-#include <iostream>
-
-int main()
-{
-    const char* vec[] = { "GCC", __VERSION__ };
-
-    for ( const auto & str : vec )
-    {
-        std::cout << str << ' ';
-    }
-
-    std::cout << '\n';
-    return 0;
-}
-
+```python {monaco-run}
+print(a)
 ```
 
 [//]: (Externals)

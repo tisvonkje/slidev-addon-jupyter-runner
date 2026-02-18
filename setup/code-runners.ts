@@ -1,8 +1,8 @@
-import {useNav} from '@slidev/client';
+//import {useNav} from '@slidev/client';
 import {CodeRunnerContext, CodeRunnerOutput, CodeRunnerProviders, defineCodeRunnersSetup} from '@slidev/types';
 import {ref} from 'vue';
 
-import packageJson from "../package.json";
+//qimport packageJson from "../package.json";
 
 
 // A reactive flag that tracks whether code is currently running
