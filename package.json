@@ -10,9 +10,7 @@
   "license": "MIT",
   "keywords": [
     "slidev-addon",
-    "c",
-    "c++",
-    "coliru"
+    "jupyter"
   ],
   "description": "A Slidev addon that allows you to run jupyter notebooks in your slides.",
   "config": {
@@ -41,6 +39,8 @@
     "@slidev/theme-default": "latest",
     "@slidev/types": "latest",
     "@types/node": "latest",
-    "vue": "latest"
+    "vue": "latest",
+    "axios": "latest",
+    "build-url-ts": "latest"
   }
 }
