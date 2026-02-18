@@ -48,7 +48,6 @@ cpp:
 
   # Whether to always show the compiler output.
   alwaysShowCompilerOutput: false
-
 ---
 
 # C + C++ Runner for [Slidev]
@@ -59,7 +58,7 @@ Powered by [Coliru]
 
 # C
 
-```c {monaco-run}
+```python {monaco-run}
 #include <stdio.h>
 
 int main( void )
