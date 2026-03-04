@@ -54,15 +54,19 @@ cpp:
 
 ::left::
 
-# C
+# left
 
 ```python {monaco-run}{autorun:false}
-a=42
+import torch
+print(torch.__version__)
+x=torch.rand(3)
+print(x)
+print(torch.cuda.is_available())
 ```
 
 ::right::
 
-# C++
+# right
 
 ```python {monaco-run}{autorun:false}
 print(a)

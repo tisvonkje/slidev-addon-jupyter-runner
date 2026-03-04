@@ -8,7 +8,7 @@ import axios from 'axios';
 import {v4 as uuidv4} from 'uuid';
 
 // The token is written on stdout when you start jupyter notebook
-const TOKEN = '70136df5e9c0263670b2330329006ef0cb0478824330ab95';
+const TOKEN = '6d14bc192a64d2d07e3a0d7c6a1c878f0f1dc0fc1448d468';
 const BASE_URL = 'http://localhost:8888';
 const HEADERS = {
     'Authorization': `Token ${TOKEN}`
@@ -96,7 +96,8 @@ async function executePythonCodeRemotely(code: string, ctx: CodeRunnerContext): 
                 const wsUrl = buildUrl('ws://localhost:8888', {
                     path: `api/kernels/${kernel.id}/channels`,
                     queryParams: {
-                        'Authorization': `Token ${TOKEN}`
+                        'Authorization': `Token ${TOKEN}`,
+			'token': `${TOKEN}`
                     }
                 })
 
@@ -122,8 +123,23 @@ async function executePythonCodeRemotely(code: string, ctx: CodeRunnerContext): 
                         ws.close();
                         console.log(`returning ${rsp.content.text}`)
                         resolve({
-                            text: rsp.content.text
+                            html: '<pre>'+rsp.content.text+'<\pre>'
                         });
+                    }
+                    if (msgType === "execute_reply") {
+                        ws.close();
+                        console.log(`returning ${rsp.content.status}`)
+                        if(typeof rsp.content.evalue!=='undefined')
+                        {
+                            resolve({
+                                text: rsp.content.evalue
+                            })
+                        } else
+                        {
+                            resolve({
+                                text: rsp.content.status
+                            })
+                        }
                     }
                 };
 

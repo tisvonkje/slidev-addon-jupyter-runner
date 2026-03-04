@@ -1,6 +1,6 @@
 {
   "name": "slidev-addon-jupyter-runner",
-  "version": "1.0.5",
+  "version": "1.0.10",
   "type": "module",
   "scripts": {
     "build": "slidev build",
@@ -9,19 +9,14 @@
   },
   "license": "MIT",
   "keywords": [
+    "slidev",
     "slidev-addon",
     "jupyter"
   ],
   "description": "A Slidev addon that allows you to run jupyter notebooks in your slides.",
-  "config": {
-    "coliru": {
-      "compileUrl": "https://coliru.stacked-crooked.com/compile",
-      "shareUrl": "https://coliru.stacked-crooked.com/share"
-    }
-  },
   "repository": {
     "type": "git",
-    "url": "https://github.com/tisvonkje/slidev-addon-jupyter-runner"
+    "url": "git+https://github.com/tisvonkje/slidev-addon-jupyter-runner.git"
   },
   "author": {
     "name": "Franc Grootjen",
@@ -39,7 +34,9 @@
     "@slidev/theme-default": "latest",
     "@slidev/types": "latest",
     "@types/node": "latest",
-    "vue": "latest",
+    "vue": "latest"
+  },
+  "dependencies": {
     "axios": "latest",
     "build-url-ts": "latest"
   }
