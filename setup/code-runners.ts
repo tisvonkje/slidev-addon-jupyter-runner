@@ -52,65 +52,29 @@ function sendExecuteRequest(code: string, sessionId: string) {
     return msg;
 }
 
-async function executePythonCodeRemotely(code: string, ctx: CodeRunnerContext): Promise<CodeRunnerOutput> {
-    return new Promise<CodeRunnerOutput>(async (resolve, reject) => {
-        {
-            try {
-                // Check for existing session
-                const sessionsUrl = `${BASE_URL}/api/sessions`;
-                const sessionsResponse = await axios.get(sessionsUrl, {headers: HEADERS});
-                const existingSessions: Session[] = sessionsResponse.data;
+// class to handle WebSockets in a synchronous way
+class SyncWebSocket {
+    url: string
+    socket: WebSocket;
 
-                let targetSession = existingSessions.find(s => s.name === 'slidev-session');
-                let session: Session;
-                let kernel: Kernel;
+    constructor(url : string) {
+        this.url = url
+    }
 
-                if (targetSession) {
-                    console.log(`Reusing existing session: ${targetSession.id}`);
-                    session = targetSession;
-                    kernel = targetSession.kernel;
-                } else {
-                    console.log("Creating new session");
-                    const kernelsUrl = `${BASE_URL}/api/kernels`;
-                    // Python: response = requests.post(url,headers=headers)
-                    // Axios post second argument is data, third is config
-                    const kernelResponse = await axios.post(kernelsUrl, {}, {headers: HEADERS});
-                    kernel = kernelResponse.data;
+    process(code: string, session) : Promise<CodeRunnerOutput> {
+        this.socket = new WebSocket(this.url);
 
-                    const data = {
-                        "id": "fixed id",
-                        "kernel": {id: kernel.id, name: kernel.name},
-                        "name": "slidev-session",
-                        "path": "path",
-                        "type": "notebook"
-                    };
-
-                    const newSessionResponse = await axios.post(sessionsUrl, data, {headers: HEADERS});
-                    session = newSessionResponse.data;
-                }
-
-                // Execution request/reply is done on websockets channels
-                // Native WebSocket usually doesn't support headers in constructor for browsers,
-                // but often does in Node.js environments. Standard way for Jupyter is query param.
-                //const wsUrl = `ws://localhost:8888/api/kernels/${kernel.id}/channels?token=${TOKEN}`;
-                const wsUrl = buildUrl('ws://localhost:8888', {
-                    path: `api/kernels/${kernel.id}/channels`,
-                    queryParams: {
-                        'Authorization': `Token ${TOKEN}`,
-			'token': `${TOKEN}`
-                    }
-                })
-
-                // Use global WebSocket
-                const ws = new WebSocket(wsUrl);
-
-                ws.onopen = () => {
-                    console.log('WebSocket connected');
+        return new Promise((resolve, reject) => {
+            if (this.socket && this.socket.readyState !== this.socket.OPEN) {
+                this.socket.addEventListener('open', () =>
+                {
                     const executeRequest = sendExecuteRequest(code, session.id);
-                    ws.send(JSON.stringify(executeRequest));
-                };
-
-                ws.onmessage = (event) => {
+                    this.socket.send(JSON.stringify(executeRequest));
+                });
+                this.socket.addEventListener('close', () => { });
+                this.socket.addEventListener('error', err => reject(err));
+                this.socket.addEventListener('message', event =>
+                {
                     console.log(`Received message: ${JSON.stringify(event.data)}`);
                     const data = event.data;
                     if (typeof data !== 'string') {
@@ -120,79 +84,104 @@ async function executePythonCodeRemotely(code: string, ctx: CodeRunnerContext): 
                     const msgType = rsp.msg_type;
 
                     if (msgType === 'stream') {
-                        ws.close();
+                        this.socket.close();
                         console.log(`returning ${rsp.content.text}`)
                         resolve({
                             html: '<pre>'+rsp.content.text+'<\pre>'
                         });
                     }
                     if (msgType === "execute_reply") {
-                        ws.close();
+                        this.socket.close();
                         console.log(`returning ${rsp.content.status}`)
                         if(typeof rsp.content.evalue!=='undefined')
                         {
                             resolve({
                                 text: rsp.content.evalue
-                            })
+                            });
                         } else
                         {
                             resolve({
                                 text: rsp.content.status
-                            })
+                            });
                         }
                     }
-                };
-
-                ws.onerror = (err) => {
-                    reject("WebSocket error");
-                };
-
-                ws.onclose = () => {
-                    reject('WebSocket closed');
-                };
-            } catch (error) {
-                // Simple error handling like in the python script (which just crashes mostly)
-                reject(error);
+                });
+            } else {
+                reject("Could not open websocket connection");
             }
+        });
+    }
+}
+
+//
+// The next function takes a code sting and returns a function that takes two function parameters resolve and reject
+// and returns a promise
+// The caller of this function calls this function for all the markdown monaco runner scripts. The resulting functions
+// are called (in parallel) and their resulting promises are waited for
+// To introduce synchronous behavior we move all work to the top level function: the function that is
+// returned will just return the precalculated values
+//
+async function executePythonCodeRemotely(code: string, ctx: CodeRunnerContext): Promise<CodeRunnerOutput> {
+    var failure : boolean =false;
+    var reason : string;
+    var result: CodeRunnerOutput | PromiseLike<CodeRunnerOutput>;
+    try {
+        // Check for existing session
+        const sessionsUrl = `${BASE_URL}/api/sessions`;
+        const sessionsResponse = await axios.get(sessionsUrl, {headers: HEADERS});
+        const existingSessions: Session[] = sessionsResponse.data;
+
+        let targetSession = existingSessions.find(s => s.name === 'slidev-session');
+        let session: Session;
+        let kernel: Kernel;
+
+        if (targetSession) {
+            console.log(`Reusing existing session: ${targetSession.id}`);
+            session = targetSession;
+            kernel = targetSession.kernel;
+        } else {
+            console.log("Creating new session");
+            const kernelsUrl = `${BASE_URL}/api/kernels`;
+            // Python: response = requests.post(url,headers=headers)
+            // Axios post second argument is data, third is config
+            const kernelResponse = await axios.post(kernelsUrl, {}, {headers: HEADERS});
+            kernel = kernelResponse.data;
+
+            const data = {
+                "id": "fixed id",
+                "kernel": {id: kernel.id, name: kernel.name},
+                "name": "slidev-session",
+                "path": "path",
+                "type": "notebook"
+            };
+
+            const newSessionResponse = await axios.post(sessionsUrl, data, {headers: HEADERS});
+            session = newSessionResponse.data;
+        }
+
+        const wsUrl = buildUrl('ws://localhost:8888', {
+            path: `api/kernels/${kernel.id}/channels`,
+            queryParams: {
+                'Authorization': `Token ${TOKEN}`, // probably not needed
+                'token': `${TOKEN}`
+            }
+        })
+
+        const ws = new SyncWebSocket(wsUrl);
+        result=await ws.process(code,session);
+    } catch (error) {
+        failure=true;
+        reason=error;
+    }
+    return new Promise<CodeRunnerOutput>(async (resolve, reject) => {
+        {
+            if(failure)
+                reject(reason);
+            else
+                resolve(result);
         }
     });
 }
-
-// const resp = await fetch(`$CODE_RUNNER_URL/run`, {
-//     method: 'POST',
-//     headers: {
-//         'Content-Type': 'application/json',
-//     },
-//     body: JSON.stringify({
-//         source: code,
-//         options: ctx.options
-//     }),
-// });
-// if (!resp.ok) {
-//     return {
-//         error: `Python code execution failed: ${resp.statusText}`,
-//     }
-// }
-//
-// const data = await resp.text();
-// const parser = new DOMParser();
-// const doc = parser.parseFromString(data, 'text/html');
-// const firstScript = doc.body.getElementsByTagName('python-runner-script')[0];
-// if (!firstScript) {
-//     return {
-//         error: 'Python code execution failed: no output',
-//     }
-// }
-
-// Create a script element with the content of the first script tag
-// const script = doc.createElement('script');
-// script.type = 'text/javascript';
-// script.innerHTML = firstScript.innerHTML;
-//
-// return {
-//     element: script,
-// }
-//}
 
 export default defineCodeRunnersSetup((_runners: CodeRunnerProviders) => {
     return {

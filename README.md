@@ -1,10 +1,10 @@
-### `slidev-addon-cpp-runner`
+### `slidev-addon-jupyter-runner`
 
 [![NPM][npm-badge]][npm-link]
 [![License][license-badge]][license-link]
 [![Deploy][deploy-badge]][deploy-link]
 
-A `C + C++` execution addon for [Slidev]'s Monaco Runner, powered by [Coliru]'s compilation API. Write, compile, and run `C + C++` code directly in your presentations!
+A jupyter notebook execution addon for [Slidev]'s Monaco Runner
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="./.github/assets/screenshot-dark.png">
@@ -13,18 +13,14 @@ A `C + C++` execution addon for [Slidev]'s Monaco Runner, powered by [Coliru]'s 
 
 ## 🌟 Features
 
-- 🖥️ In-slide C/C++ code execution
-- ⚙️ Customizable compiler configurations
-- 🔄 Real-time output display
-- 📚 Support for multiple language standards
-- 🎚️ Per-slide configuration overrides
-- 🚦 Compiler output filtering
-- 🛡️ Type-safe configuration options
+- 🖥️ In-slide Jupyter notebook execution
+- Supports pdf exporting
+
 
 ## 📦 Installation
 
 ```bash
-npm install slidev-addon-cpp-runner
+npm install slidev-addon-jupyter-runner
 ```
 
 Enable the addon in your [Slidev](http://sli.dev) frontmatter:
@@ -32,156 +28,18 @@ Enable the addon in your [Slidev](http://sli.dev) frontmatter:
 ```yaml
 ---
 addons:
-- slidev-addon-cpp-runner
+- slidev-addon-jupyter-runner
 ---
 ```
 
 ## 🛠️ Usage
 
-### C Example
-
-```yaml
-# C
-
-```c {monaco-run}
-/** C2x CODE */
+Make sure you got jupyter notebook running. Use the following commandline to start jupyter notebook
+```
+jupyter notebook --NotebookApp.allow_origin="*" --NotebookApp.token="6d14bc192a64d2d07e3a0d7c6a1c878f0f1dc0fc1448d468"
 ```
 
-### C++ Example
 
-```yaml
-# C++
-
-```cpp {monaco-run}
-/** C++20 CODE */
-```
-
-## ⚙️ Configuration
-
-### Global Configuration
-```yaml
----
-addons:
-- slidev-addon-cpp-runner
-
-# C configuration using default settings
-c:
-  # Compiler to use.
-  compiler: 'gcc'
-
-  # C standard.
-  standard: 'c2x'
-
-  # Optimization level.
-  optimization: 'O2'
-
-  # Compiler flags.
-  flags: '-Wall -Wextra -pedantic -pthread -pedantic-errors'
-
-  # Libraries to link.
-  libraries: '-lm -latomic'
-
-  # Additional shell commands to run after compilation.
-  extraCommands: ''
-
-  # Whether to always show the compiler output.
-  alwaysShowCompilerOutput: true
-
-# C++ configuration using default settings
-cpp:
-  # Compiler to use.
-  compiler: 'g++'
-
-  # C++ standard.
-  standard: 'c++20'
-
-  # Optimization level.
-  optimization: 'O2'
-
-  # Compiler flags.
-  flags: '-Wall -Wextra -pedantic -pthread -pedantic-errors'
-
-  # Libraries to link.
-  libraries: '-lm -latomic'
-
-  # Additional shell commands to run after compilation.
-  extraCommands: ''
-
-  # Whether to always show the compiler output.
-  alwaysShowCompilerOutput: false
-
----
-```
-
-### Compiler Support
-
-| Compiler  | Standards                      |
-|-----------|--------------------------------|
-| **C++**   |                                |
-| g++       | 98,11,14,17,20,23             |
-| clang++   | 98,11,14,17                   |
-| g++-4.9   | 98,11,14                      |
-| g++-5.2   | 98,11,14,1z                   |
-| **C**     |                                |
-| gcc       | 89,99,11,17,2x                |
-| clang     | 89                            |
-| g++-4.9   | 89,99,11                      |
-| g++-5.2   | 89,99,11                      |
-| clang++   | 99,11                         |
-
-### Optimization Levels
-
-| Level | Description                                  |
-|-------|----------------------------------------------|
-| O0    | No optimization                              |
-| O1    | Basic optimization                           |
-| O2    | Moderate optimization (default)              |
-| O3    | Aggressive optimization                      |
-| Os    | Optimize for size                            |
-| Og    | Debug-friendly optimization                  |
-| Ofast | Maximum performance (unsafe)                 |
-
-## 🎚️ Per-Slide Customization
-```yaml
----
-cpp:
-standard: 'c++17'
-optimization: 'O3'
----
-# Custom Compilation Settings
-
-```cpp {monaco-run}
-/** C++17 CODE */
-```
-
-## 📝 Output Formatting
-
-- When `alwaysShowCompilerOutput` is `true`:
-	- **Compiler Output**: `☘ [Compiler message]`
-	- **Program Output**: `☢ [Program output]`
-- When `alwaysShowCompilerOutput` is `false`:
-	- Only program output is shown (unless there's a compiler error)
-
-## 🛡️ Type Safety
-
-The addon includes comprehensive type safety features:
-
-- Strict validation of compiler options, standards, and optimization levels.
-- Runtime validation with fallback to defaults for invalid settings.
-- Console warnings for invalid configuration options.
-- TypeScript interfaces for configuration validation.
-
-## 🔧 How It Works
-
-1. 📩 Code sent to [Coliru] API.
-2. 🛠️ Compiled with specified options.
-3. 🏃 Executed in secure environment.
-4. 📤 Results returned to your slide.
-
-## ⚠️ Limitations
-
-- 🌐 Requires internet connection.
-- 🛡️ Subject to [Coliru]'s services and security restrictions.
 
 ---
 
